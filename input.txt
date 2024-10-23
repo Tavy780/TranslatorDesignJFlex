@@ -1,0 +1,1 @@
+int somethiWng = 20, cool = 50;
