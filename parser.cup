@@ -44,27 +44,38 @@ terminal INT;
 terminal ID;
 
 /* Non terminals */
-non terminal            expr_list;
-non terminal 			decl_var;
+non terminal            expression;
+non terminal 			expression_stmt;
+non terminal			selection_stmt;
+non terminal			iteration_stmt;
+non terminal 			return_stmt;
+non terminal 			compound_stmt;
+non terminal			declaration_list;
+non terminal 			declaration;
+non terminal 			var_declaration;
+non terminal 			var;
+non terminal 			type_specifier;
 non terminal 			statement_list;
-non terminal 			return_statement;
-non terminal 			comp_state;
+non terminal			statement;
 non terminal            expr_set;
-non terminal 			func_def;
-non terminal            func_call;
-non terminal 		    args_list;
-non terminal			param_list_function;
-non terminal 			if_statement;
-non terminal 		    if_else_statement;
-non terminal			else_statement;
-non terminal 			while_statement;
-non terminal 			statements_for_if_while;
-non terminal Integer    expr_int;      // used to store evaluated subexpressions
-non terminal Boolean    expr_bool;   // used to store evaluated subexpressions
+non terminal 			func_declaration;
+non terminal            call;
+non terminal 		    args;
+non terminal 			arg_list;
+non terminal 			local_declarations; 
+non terminal			params; // parameters
+non terminal 			param_list; // the parameters list
+non terminal			param; // the parameter from the list of parameters
+non terminal 			program; // the main program how is structured
+non terminal 			relop; // relation operators
+non terminal            addop; // addition operators
+non terminal 			mulop;
+non terminal 			term;
+non terminal			factor;
+non terminal            additive_expression;      // additive_expression
+non terminal    		simple_expression;   // simple expression
 /* Precedences */
 precedence nonassoc ELSE;	// Inserted by Eclipse plugin
-precedence nonassoc LPAREN;
-precedence nonassoc RPAREN;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE;
 precedence left UMINUS;
@@ -73,206 +84,122 @@ precedence left LESSTHAN,GREATERTHAN;
 precedence left LESSEQTHAN,GREATEREQTHAN;
 
 /* The grammar rules */		
-statement_list ::= statement_list return_statement SEMI         {: System.out.println("A return statement"); :} 
-			| statement_list decl_var:dl SEMI					{: System.out.println("A declaration"); :}
-         | statement_list expr_set SEMI						{: System.out.println("Expression with a variable set"); :}
-         | statement_list comp_state							{: System.out.println("Expression with a compound statement"); :}
-         | statement_list func_def							{: System.out.println("That's a function declaration"); :}
-         | statement_list func_call SEMI					{: System.out.println("That's a non-returnable function call"); :}	
-         | statement_list if_statement						{: System.out.println("If statement finally detected"); :}
-         | statement_list if_else_statement					{: System.out.println("If else statement finally detected.");:}
-         | statement_list while_statement					{: System.out.println("While statement finally found"); :}
-         | return_statement SEMI								{: System.out.println("A return statement"); :} 
-         | decl_var:dl SEMI									{: System.out.println("A declaration"); :}
-  			| expr_set SEMI							            {: System.out.println("Expression with a variable set"); :}
-  			| comp_state										{: System.out.println("Expression with a compound statement"); :}
-  			| func_def											{: System.out.println("That's a function declaration"); :}
-  			| func_call SEMI								{: System.out.println("That's a non-returnable function call"); :}	
-   		| if_else_statement									{: System.out.println("If else statement finally detected.");:}  			
-  			| if_statement										{: System.out.println("If statement finally detected"); :}
-  			| while_statement									{: System.out.println("While statement finally found"); :}
-  			;        
+program ::= declaration_list {:System.out.println("A declaration list found in the program");:}
+		 ;
+		
+statement_list ::= statement_list statement {: System.out.println("A system found in the list of "); :}
+			   |	{: System.out.println("There are no statements"); :}
+			   ;        
 
-while_statement ::= WHILE LPAREN expr_bool RPAREN statements_for_if_while {: System.out.println("While statement found!"); :}
-				 ;
-
-if_statement ::= IF LPAREN expr_bool RPAREN statements_for_if_while {: System.out.println("If statement detected"); :}
-			 ;
-     
-else_statement ::= ELSE statements_for_if_while {: System.out.println("Else statement detected"); :}
-			    ;     
-     
-if_else_statement ::= if_statement else_statement {: System.out.println("If else statement detected"); :}    
-    			   ;			
-
-statements_for_if_while ::= return_statement SEMI					{: System.out.println("A return statement"); :} 
-         | decl_var SEMI									    {: System.out.println("A declaration"); :}
-  			| expr_set SEMI							            {: System.out.println("Expression with a variable set"); :}
-  			| comp_state										{: System.out.println("Expression with a compound statement"); :}
-  			| func_call SEMI								{: System.out.println("That's a non-returnable function call"); :}	
-  			| if_statement										{: System.out.println("If statement finally detected"); :}
-  			| if_else_statement									{: System.out.println("If else statement detected"); :}
-  			| while_statement									{: System.out.println("While statement finally found"); :}
-  			;
-
-comp_state ::= LBRACE statement_list RBRACE   {: System.out.println("Compound statement"); :}
-			;     
-			
-args_list ::= args_list ID:i COMMA {: System.out.println("The argument variable with the id " + i + " and has comma"); :}
-		   | args_list expr_int COMMA {: System.out.println("The list of expressions with comma"); :}
-		   | args_list func_call COMMA {: System.out.println("The function with comma as an argument for the list of argumentss"); :}
-		   | args_list ID:i {: System.out.println("The argument variable with the id " + i + " and has no comma"); :}
-		   | args_list expr_int {: System.out.println("The list of expressions with no comma"); :}
-		   | args_list func_call {: System.out.println("The function with no comma as an argument for the list of argumentss"); :}
-		   | ID:i COMMA {: System.out.println("The argument variable with the id " + i + " and has comma"); :}
-		   | expr_int COMMA {: System.out.println("The list of expressions with comma"); :}
-		   | func_call COMMA {: System.out.println("The function with comma as an argument for the list of argumentss"); :}
-		   | ID:i {: System.out.println("The argument variable with the id " + i + " and has no comma"); :}
-		   | expr_int {: System.out.println("The list of expressions with no comma"); :}
-		   | func_call {: System.out.println("The function with no comma as an argument for the list of argumentss"); :}
+statement ::= expression_stmt {: System.out.println("An expression statement detected"); :}
+		   | compound_stmt  {: System.out.println("A compound statement detected"); :}
+		   | iteration_stmt {: System.out.println("An iteration statement detected"); :}
+		   | selection_stmt {: System.out.println("A selection statement detected"); :}
+		   | return_stmt {: System.out.println("A return statement detected"); :}
 		   ;
-		   
-func_call ::= ID:i LPAREN RPAREN {: System.out.println("The function with the id " + i + " has no arguments "); :}
-			  | ID:i LPAREN args_list RPAREN {: System.out.println("The function with the id " + i + " has arguments"); :}
-			  ; 
-			  
-expr_set ::= ID:i SET expr_list	  {: System.out.println("A variable assignment value with the id " + i); :}
-		  | ID:i SET ID:j {: System.out.println("A variable with the id " + i + " gets the value of the other variable with the id " + j); :}
-		  | ID:i SET func_call {: System.out.println("A variable with the id " + i + " get the value of a function "); :} 
-		  ;
-            
-return_statement ::= RETURN expr_list:e {: System.out.println("Return a value"); :}
-				  | RETURN ID:i {: System.out.println("Return a variable " + i); :} 
-				  | RETURN SEMI {: System.out.println("Return statement"); :}
-				  | RETURN func_call {: System.out.println("Return the value of a function"); :}
+
+expression ::= var SET expression {: System.out.println("A variable is set with an expression in an expression"); :}
+			| simple_expression {: System.out.println("A simple expression"); :}
+			;
+
+expression_stmt ::= expression SEMI {: System.out.println("An expression with a semicolon"); :}
+				| SEMI {: System.out.println("A semicolon with no expression"); :}
+				;
+
+iteration_stmt ::=  WHILE LPAREN expression RPAREN statement {: System.out.println("An iteration statement with while keyword"); :}
+				;
+
+selection_stmt ::= IF LPAREN expression RPAREN statement {: System.out.println("An if statement with no else statement detected");  :}
+				| IF LPAREN expression RPAREN statement ELSE statement{: System.out.println("An if statement with an else statement detected"); :}
+				;
+
+return_stmt ::= RETURN SEMI {: System.out.println("Return statement with no expression"); :}
+			| RETURN expression SEMI {: System.out.println("A return statement that returns an expression"); :}
+			;
+
+declaration_list ::= declaration_list declaration {: System.out.println("The declaration appended to the declaration list"); :}
+				  | declaration {: System.out.println("The declaration"); :} 
 				  ;
 
-param_list_function ::= param_list_function INT ID:i COMMA {: System.out.println("Parameter with the id " + i + " with comma ");  :}
-					| param_list_function INT ID:i {: System.out.println("Parameter with the id " + i + " with no comma ");  :}
-					| param_list_function INT ID:i LBRACKET RBRACKET COMMA {: System.out.println("Parameter with id " + i + " with comma and brackets "); :}
-					| param_list_function INT ID:i LBRACKET RBRACKET {: System.out.println("Parameter with id " + i + " with no comma ,but with brackets "); :}
-					| INT ID:i COMMA {: System.out.println("Parameter with the id " + i + " with comma ");  :}
-					| INT ID:i {: System.out.println("Parameter with the id " + i + " with no comma ");  :}
-					| INT ID:i LBRACKET RBRACKET COMMA {: System.out.println("Parameter with id " + i + " with no comma "); :}
-					| INT ID:i LBRACKET RBRACKET {: System.out.println("Parameter with id " + i + " with no comma ,but with brackets "); :}
-					;
-				  
-func_def ::= INT ID:i LPAREN param_list_function RPAREN comp_state {: System.out.println("The function declaration with the id " + i + " and is of type returnable "); :}
-		   | VOID ID:i LPAREN param_list_function RPAREN comp_state {: System.out.println("The function declaration with the id " + i + " and is of type void "); :}
-		   | INT ID:i LPAREN VOID RPAREN comp_state {: System.out.println("The function with the id " + i + " and no parameters and is returnable"); :}
-		   | VOID ID:i LPAREN VOID RPAREN comp_state {: System.out.println("The function with the id " + i + " and no parameters and is not returnable"); :}
+declaration ::= var_declaration {: System.out.println("Variable declaration detected in the declaration list"); :}
+			| func_declaration {: System.out.println("Function declaration detected in the declaration list"); :}
+			;				
+			
+local_declarations ::= local_declarations var_declaration {: System.out.println("A variable declaration in this local declaration"); :}
+				   |									  {: System.out.println("No local declarations"); :}
+				   ;
+
+compound_stmt ::= LBRACE local_declarations statement_list RBRACE   {: System.out.println("Compound statement"); :}
+			;     
+			
+args ::= arg_list {: System.out.println("The argument list"); :}
+		 |	{: System.out.println("No arguments available"); :}
+		 ;
+		   
+arg_list ::= arg_list COMMA expression {: System.out.println("This is an expression in a list of arguments"); :} 
+		  | expression {: System.out.println("It's an expression that the list of arguments begins with"); :}
+		  ;
+		  
+call ::= ID:i LPAREN args RPAREN {: System.out.println("The function with the id " + i + " has no arguments "); :}
+	 ;
+
+params ::= param_list {: System.out.println("parameter list");  :}
+		 | VOID		  {: System.out.println("No parameters available"); :}
+		 ;
+		   
+param_list ::= param_list COMMA param {: System.out.println("Parameter with a comma"); :}
+		   | param {: System.out.println("Parameter with no comma"); :}
 		   ;
 
-decl_var ::=INT ID:i							  	    {: System.out.println("the id " + i + " for the variable "); :}
-            | INT ID:i SET expr_list:e 			  	    {: System.out.println("the variable with id and with type declaration " + i + " has been assigned a value");  :}
-            | INT ID:i SET ID:j 			  		    {: System.out.println("A variable with the id " + i + " and with the type declaration of int has been assinged another variable with the id " + j);  :}
-            | INT ID:i SET func_call				{: System.out.println("A variable with the id " + i + " gets the value of a function"); :}
-            ; 
+param ::= type_specifier ID:i {: System.out.println("Parameter with the id " + i); :} 
+	   | type_specifier ID:i LBRACKET RBRACKET {: System.out.println("Parameter array with the id " + i); :}
+	   ;
+				  
+func_declaration ::= type_specifier ID:i LPAREN params RPAREN compound_stmt {: System.out.println("The function declaration with the id " + i + " and it also has parameters"); :}
+		          ;
 
-expr_list ::= expr_list expr_int              	    {: :}
-			   | expr_list expr_bool      	            {: :}
-			   | expr_int 	 	                        {: :}
-            | expr_bool						        {: :}
-            ;
-            
-expr_int   ::= expr_int:e1 PLUS  expr_int:e2     {: /*RESULT = e1+e2;*/ System.out.println("expr plus expr"); :}
-             | expr_int:e PLUS ID 				 {: System.out.println("expr plus var"); :}
-             | ID PLUS expr_int:e				 {: System.out.println("var plus expr");  :}
-             | ID PLUS ID						 {: System.out.println("var plus var"); :}
-             | expr_int:e1 MINUS expr_int:e2     {: /*RESULT = e1-e2;*/ System.out.println("expr minus expr"); :}
-             | expr_int:e MINUS ID 				 {: System.out.println("expr minus var"); :}
-             | ID MINUS expr_int:e				 {: System.out.println("var minus expr");  :}
-             | ID MINUS ID						 {: System.out.println("var minus var"); :}
-             | expr_int:e1 TIMES expr_int:e2     {: /*RESULT = e1*e2;*/ System.out.println("expr times expr"); :}
-             | expr_int:e TIMES ID 				 {: System.out.println("expr times var"); :}
-             | ID TIMES expr_int:e				 {: System.out.println("var times expr");  :}
-             | ID TIMES ID						 {: System.out.println("var times var"); :}
-             | MINUS expr_int:e                  {: /*RESULT = -e;*/ System.out.println("minus expr"); :}
-     		    | MINUS ID							 {: System.out.println("minus ID");   :}
-     		    %prec UMINUS
-             | LPAREN expr_int:e RPAREN	         {: /*RESULT = e;*/ System.out.println("(expr)"); :}
-             | LPAREN ID:u RPAREN				 {: System.out.println("(" + u + ")"); :}
-             | NUM:n 				             {: /*RESULT = n;*/ System.out.println("NUM " + n); :}
-             | expr_int:e1 DIVIDE expr_int:e2    {: /*RESULT = e1/e2;*/ System.out.println("expr divide expr"); :}
-             | expr_int:e DIVIDE ID 		     {: System.out.println("expr divide var"); :}
-             | ID DIVIDE expr_int:e				 {: System.out.println("var divide expr");  :}
-             | ID DIVIDE ID						 {: System.out.println("var divide var"); :}
-             | func_call PLUS func_call {: System.out.println("func plus func"); :}
-  			    | expr_int PLUS func_call {: System.out.println("val plus func"); :}
-       		 | func_call PLUS expr_int {: System.out.println("func plus val"); :}
-  			    | ID PLUS func_call {: System.out.println("id plus func"); :}
-       		 | func_call PLUS ID {: System.out.println("func plus id"); :}
-       		 | func_call MINUS func_call {: System.out.println("func minus func"); :}
-  			    | expr_int MINUS func_call {: System.out.println("val minus func"); :}
-       		 | func_call MINUS expr_int {: System.out.println("func minus val"); :}
-  		       | ID MINUS func_call {: System.out.println("id minus func"); :}
-       		 | func_call MINUS ID {: System.out.println("func minus id"); :}
-       		 | func_call TIMES func_call {: System.out.println("func times func"); :}
-  			    | expr_int TIMES func_call {: System.out.println("val times func"); :}
-       		 | func_call TIMES expr_int {: System.out.println("func times val"); :}
-  			    | ID TIMES func_call {: System.out.println("id times func"); :}
-       		 | func_call TIMES ID {: System.out.println("func times id"); :}
-       		 | func_call DIVIDE func_call {: System.out.println("func divide func"); :}
-  			    | expr_int DIVIDE func_call {: System.out.println("val divide func"); :}
-       		 | func_call DIVIDE expr_int {: System.out.println("func divide val"); :}
-  			    | ID DIVIDE func_call {: System.out.println("id divide func"); :}
-       	    | func_call DIVIDE ID {: System.out.println("func divide id"); :}
-       	    | LPAREN func_call RPAREN {: System.out.println("(func)"); :}
-       		 | MINUS func_call {: System.out.println("minus func"); :}
-             ;
-             
-expr_bool  ::= expr_int:e1 EQUAL expr_int:e2 		 {: /*RESULT = e1 == e2;*/ System.out.println("expr equal expr");  :}
-			 | expr_int:e EQUAL ID 		             {: System.out.println("expr equal var"); :}
-          | ID EQUAL expr_int:e				     {: System.out.println("var equal expr");  :}
-          | ID EQUAL ID						     {: System.out.println("var equal var"); :}
-			 | expr_int:e1 DIFFTHAN expr_int:e2		 {: /*RESULT = e1 != e2;*/ System.out.println("expr different expr");  :}
-			 | expr_int:e DIFFTHAN ID 		         {: System.out.println("expr different than var"); :}
-          | ID DIFFTHAN expr_int:e				 {: System.out.println("var different than expr");  :}
-          | ID DIFFTHAN ID						 {: System.out.println("var different than var"); :}
-			 | expr_int:e1 LESSTHAN expr_int:e2		 {: /*RESULT = e1 < e2;*/ System.out.println("expr less than expr");	 :}
-			 | expr_int:e LESSTHAN ID 		         {: System.out.println("expr less than var"); :}
-          | ID LESSTHAN expr_int:e				 {: System.out.println("var less than expr");  :}
-          | ID LESSTHAN ID						 {: System.out.println("var less than var"); :}
-			 | expr_int:e1 GREATERTHAN expr_int:e2 	 {: /*RESULT = e1 > e2;*/ System.out.println("expr greater than expr");	 :}
-			 | expr_int:e GREATERTHAN ID 		     {: System.out.println("expr greater than var"); :}
-          | ID GREATERTHAN expr_int:e			 {: System.out.println("var greater than expr");  :}
-          | ID GREATERTHAN ID					 {: System.out.println("var greater than var"); :}
-			 | expr_int:e1 LESSEQTHAN expr_int:e2 	 {: /*RESULT = e1 <= e2;*/ System.out.println("expr less or equal than expr"); 	 :}
-			 | expr_int:e LESSEQTHAN ID 		     {: System.out.println("expr less or equal than var"); :}
-          | ID LESSEQTHAN expr_int:e			 	 {: System.out.println("var less or equal than expr");  :}
-          | ID LESSEQTHAN ID					 	 {: System.out.println("var less or equal than var"); :}
-			 | expr_int:e1 GREATEREQTHAN expr_int:e2 {: /*RESULT = e1 >= e2;*/ System.out.println("expr greater or equal than expr");	 :}
-			 | expr_int:e GREATEREQTHAN ID 		     {: System.out.println("expr greater or equal than var"); :}
-          | ID GREATEREQTHAN expr_int:e			 {: System.out.println("var greater or equal than expr");  :}
-          | ID GREATEREQTHAN ID					 {: System.out.println("var greater or equal than var"); :}
-			 | func_call EQUAL func_call {: System.out.println("func equal func"); :}
-  			 | expr_int EQUAL func_call {: System.out.println("val equal func"); :}
-       	 | func_call EQUAL expr_int {: System.out.println("func equal val"); :}
-  			 | ID EQUAL func_call {: System.out.println("id equal func"); :}
-       	 | func_call EQUAL ID {: System.out.println("func equal id"); :}
-       	 | func_call DIFFTHAN func_call {: System.out.println("func different than func"); :}
-  			 | expr_int DIFFTHAN func_call {: System.out.println("val different than func"); :}
-       	 | func_call DIFFTHAN expr_int {: System.out.println("func different than val"); :}
-  			 | ID DIFFTHAN func_call {: System.out.println("id different than func"); :}
-       	 | func_call DIFFTHAN ID {: System.out.println("func different than id"); :}
-       	 | func_call LESSTHAN func_call {: System.out.println("func less than func"); :}
-  			 | expr_int LESSTHAN func_call {: System.out.println("val less than func"); :}
-       	 | func_call LESSTHAN expr_int {: System.out.println("func less than val"); :}
-  			 | ID LESSTHAN func_call {: System.out.println("id less than func"); :}
-       	 | func_call LESSTHAN ID {: System.out.println("func less than id"); :}
-       	 | func_call GREATERTHAN func_call {: System.out.println("func greater than func"); :}
-  			 | expr_int GREATERTHAN func_call {: System.out.println("val greater than func"); :}
-       	 | func_call GREATERTHAN expr_int {: System.out.println("func greater than val"); :}
-  			 | ID GREATERTHAN func_call {: System.out.println("id greater than func"); :}
-       	 | func_call GREATERTHAN ID {: System.out.println("func greater than id"); :}
-       	 | func_call LESSEQTHAN func_call {: System.out.println("func less or equal than func"); :}
-  			 | expr_int LESSEQTHAN func_call {: System.out.println("val less or equal than func"); :}
-       	 | func_call LESSEQTHAN expr_int {: System.out.println("func less or equal than val"); :}
-  			 | ID LESSEQTHAN func_call {: System.out.println("id less or equal than func"); :}
-       	 | func_call LESSEQTHAN ID {: System.out.println("func less or equal than id"); :}
-       	 | func_call GREATEREQTHAN func_call {: System.out.println("func greater or equal than func"); :}
-  			 | expr_int GREATEREQTHAN func_call {: System.out.println("val greater or equal than func"); :}
-       	 | func_call GREATEREQTHAN expr_int {: System.out.println("func greater or equal than val"); :}
-  			 | ID GREATEREQTHAN func_call {: System.out.println("id greater or equal than func"); :}
-       	 | func_call GREATEREQTHAN ID {: System.out.println("func greater or equal than id"); :}
-			 ;
+var_declaration ::= type_specifier ID:i SEMI {: System.out.println(" variable declaration of id " + i); :}
+				| type_specifier ID:i LBRACKET NUM:n RBRACKET SEMI {: System.out.println(" variable declaration of an array with " + n + " and id " + i ); :}
+				; 
+
+var ::= ID:i {: System.out.println("The id of the variable " + i); :}
+	| ID:i LBRACKET expression RBRACKET {: System.out.println("The variable with the id " + i + " is an array with an expression in the index"); :} 
+	;
+
+type_specifier ::= INT {: System.out.println("INT type "); :}
+				| VOID {: System.out.println("VOID type "); :}
+				;
+				
+relop ::= LESSEQTHAN {: System.out.println("<= less or equal than"); :}
+		| LESSTHAN {: System.out.println("< less than"); :}
+		| GREATERTHAN {: System.out.println("> greater than"); :}
+		| GREATEREQTHAN {: System.out.println(">= greater or equal than"); :}
+		| EQUAL {: System.out.println("== equal"); :}
+		| DIFFTHAN {: System.out.println("!= different than"); :}
+		;				
+				
+addop ::= PLUS {: System.out.println("+ plus operator"); :}
+	   | MINUS {: System.out.println("- minus operator"); :}
+	   ;
+
+mulop ::= TIMES {: System.out.println("* times"); :}
+	   | DIVIDE {: System.out.println("/ divide"); :}
+	   ;
+	   
+simple_expression ::= additive_expression relop additive_expression {: System.out.println("A comparison operator"); :}
+				   | additive_expression {: System.out.println("An additive expression"); :}
+				   ;
+				   
+additive_expression ::= additive_expression addop term{: System.out.println("Making an additive expression list with an addition or subtraction operator and a term"); :}
+					 | term {: System.out.println("A simple term that is the beginning term of the expression"); :}
+					 ;
+
+term ::= term mulop factor {: System.out.println("A term multiplied or divided by the factor"); :}
+	 | factor {: System.out.println("A factor"); :}
+	 ;
+
+factor ::= LPAREN expression RPAREN {: System.out.println("(the expression) is a considered factor"); :}
+		| var {: System.out.println("The variable is a factor"); :}
+		| call {: System.out.println("The function call is a factor"); :}
+		| NUM:n {: System.out.println("The number " + n + " is in the epxression"); :}
+		;
