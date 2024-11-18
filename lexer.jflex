@@ -56,7 +56,7 @@ import java.io.InputStreamReader;
 
 Newline    = \n | \r | \r\n 
 Whitespace = [ \t\f] | {Newline}
-Number     = 0 | [1-9][0-9]*
+Number     = [0-9]*
 
 /* comments */
 Comment = {TraditionalComment}
